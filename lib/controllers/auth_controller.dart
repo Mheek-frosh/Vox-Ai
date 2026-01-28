@@ -26,14 +26,12 @@ class AuthController extends GetxController {
         _isLoggedIn.value = true;
       }
     } catch (e) {
-      print("Error reading secure storage: $e");
+      print("Error checking session: $e");
     }
   }
 
   Future<bool> login(String identifier, String password) async {
     await Future.delayed(const Duration(seconds: 2));
-
-    // Simple mock logic
     if (password.length >= 6) {
       final user = UserModel(
         id: '1',
@@ -41,30 +39,10 @@ class AuthController extends GetxController {
         email: identifier.contains('@') ? identifier : 'john@example.com',
         phoneNumber: !identifier.contains('@') ? identifier : '+1234567890',
       );
-
       await _saveSession(user);
       return true;
     }
     return false;
-  }
-
-  Future<bool> register({
-    required String fullName,
-    required String email,
-    required String phoneNumber,
-    required String password,
-  }) async {
-    await Future.delayed(const Duration(seconds: 2));
-
-    final user = UserModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      fullName: fullName,
-      email: email,
-      phoneNumber: phoneNumber,
-    );
-
-    await _saveSession(user);
-    return true;
   }
 
   Future<void> _saveSession(UserModel user) async {
@@ -78,13 +56,5 @@ class AuthController extends GetxController {
     _currentUser.value = null;
     _isLoggedIn.value = false;
     Get.offAllNamed('/login');
-  }
-
-  void updateProfile(UserModel updatedUser) async {
-    _currentUser.value = updatedUser;
-    await _storage.write(
-      key: _userKey,
-      value: jsonEncode(updatedUser.toJson()),
-    );
   }
 }

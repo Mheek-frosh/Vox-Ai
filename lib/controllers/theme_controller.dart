@@ -4,8 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeController extends GetxController {
   final _key = 'isDarkMode';
-  final _prefs = SharedPreferences.getInstance();
-
   RxBool isDarkMode = false.obs;
 
   @override
@@ -15,15 +13,15 @@ class ThemeController extends GetxController {
   }
 
   void _loadTheme() async {
-    final prefs = await _prefs;
-    isDarkMode.value = prefs.getBool(_key) ?? false;
+    final prefs = await SharedPreferences.getInstance();
+    isDarkMode.value = prefs.getBool(_key) ?? true; // Default dark
     Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
   }
 
   void toggleTheme() async {
     isDarkMode.value = !isDarkMode.value;
     Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
-    final prefs = await _prefs;
+    final prefs = await SharedPreferences.getInstance();
     prefs.setBool(_key, isDarkMode.value);
   }
 }

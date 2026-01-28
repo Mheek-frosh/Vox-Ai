@@ -1,34 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'theme/app_themes.dart';
-import 'controllers/auth_controller.dart';
-import 'controllers/theme_controller.dart';
-import 'controllers/notification_controller.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/dashboard_screen.dart';
-import 'screens/profile_screen.dart';
 import 'screens/settings_screen.dart';
-import 'screens/notifications_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/onboarding_screen.dart';
+import 'controllers/auth_controller.dart';
+import 'controllers/theme_controller.dart';
+import 'theme/app_themes.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Controllers
-  Get.put(ThemeController());
-  Get.put(AuthController());
-  Get.put(NotificationController());
-
-  runApp(const VoxAI());
+  runApp(const VoxAiApp());
 }
 
-class VoxAI extends StatelessWidget {
-  const VoxAI({super.key});
+class VoxAiApp extends StatelessWidget {
+  const VoxAiApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final themeController = Get.find<ThemeController>();
+    // Initialize ThemeController
+    final themeController = Get.put(ThemeController());
+    // Initialize AuthController
+    Get.put(AuthController());
 
     return Obx(
       () => GetMaterialApp(
@@ -45,12 +41,9 @@ class VoxAI extends StatelessWidget {
           GetPage(name: '/login', page: () => const LoginScreen()),
           GetPage(name: '/register', page: () => const RegisterScreen()),
           GetPage(name: '/dashboard', page: () => DashboardScreen()),
-          GetPage(name: '/profile', page: () => const ProfileScreen()),
+          GetPage(name: '/onboarding', page: () => const OnboardingScreen()),
           GetPage(name: '/settings', page: () => const SettingsScreen()),
-          GetPage(
-            name: '/notifications',
-            page: () => const NotificationsScreen(),
-          ),
+          GetPage(name: '/profile', page: () => const ProfileScreen()),
         ],
       ),
     );

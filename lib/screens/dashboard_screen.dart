@@ -1,333 +1,434 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:avatar_glow/avatar_glow.dart';
-import '../controllers/auth_controller.dart';
 import '../controllers/voice_controller.dart';
+import '../controllers/auth_controller.dart';
 import '../theme/app_colors.dart';
 import '../widgets/voice_overlay.dart';
 
 class DashboardScreen extends StatelessWidget {
   DashboardScreen({super.key});
-
-  final AuthController authController = Get.find<AuthController>();
-  final VoiceController voiceController = Get.put(VoiceController());
+  final _voice = Get.put(VoiceController());
+  final _auth = Get.find<AuthController>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.darkBg,
-              AppColors.darkSurface.withOpacity(0.8),
-              AppColors.darkBg,
-            ],
+      backgroundColor: AppColors.darkBg,
+      body: Stack(
+        children: [
+          // Background Aesthetic
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primary.withOpacity(0.05),
+              ),
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              // Glow effect background
-              Positioned(
-                top: -100,
-                left: -100,
-                child: Container(
-                  width: 300,
-                  height: 300,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.15),
-                    shape: BoxShape.circle,
+          SafeArea(
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                // Top Bar
+                _buildSliverAppBar(),
+
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+                        // Assistant Avatar Section
+                        _buildAssistantAvatar(),
+
+                        const SizedBox(height: 32),
+                        // Main Response Card
+                        _buildResponseCard(),
+
+                        const SizedBox(height: 32),
+                        // Stats Overview
+                        _buildStatsOverview(),
+
+                        const SizedBox(height: 32),
+                        // Quick Actions Grid
+                        _buildQuickActionsTitle(),
+                        const SizedBox(height: 16),
+                        _buildQuickActionsGrid(),
+
+                        const SizedBox(height: 32),
+                        // History Section
+                        _buildHistorySection(),
+
+                        const SizedBox(height: 120), // Space for FAB
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Voice Overlay
+          Obx(
+            () => _voice.isListening.value
+                ? VoiceOverlay()
+                : const SizedBox.shrink(),
+          ),
+
+          // Bottom Voice FAB
+          _buildVoiceFAB(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSliverAppBar() {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Morning, ${_auth.currentUser?.fullName.split(" ")[0] ?? "User"}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Text(
+                  'Neural Link: Active',
+                  style: TextStyle(
+                    color: AppColors.success,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            GestureDetector(
+              onTap: () => Get.toNamed('/settings'),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    ),
+                    child: const Icon(
+                      Icons.grid_view_rounded,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    _buildHeader(context),
-                    const SizedBox(height: 40),
-                    _buildWelcomeSection(context),
-                    const SizedBox(height: 32),
-                    _buildQuickActions(context),
-                    const SizedBox(height: 40),
-                    _buildHistorySection(context),
-                    const Spacer(),
-                    _buildVoiceControl(context),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
-
-              // Voice Overlay when listening
-              Obx(
-                () => voiceController.isListening.value
-                    ? VoiceOverlay()
-                    : const SizedBox.shrink(),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
+  Widget _buildAssistantAvatar() {
+    return FadeIn(
+      duration: const Duration(seconds: 2),
+      child: Center(
+        child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+            Obx(
+              () => Lottie.network(
+                _voice.isListening.value
+                    ? 'https://assets5.lottiefiles.com/packages/lf20_6n9mruy6.json' // Active
+                    : 'https://assets2.lottiefiles.com/packages/lf20_T637D6.json', // Idle
+                height: 150,
+                width: 150,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.circle,
+                  size: 80,
+                  color: AppColors.primary,
+                ),
               ),
-              child: const Icon(Icons.mic_rounded, color: AppColors.primary),
             ),
-            const SizedBox(width: 12),
-            Text(
-              'Vox AI',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Colors.white,
+            const SizedBox(height: 12),
+            const Text(
+              'VOX-CORE v1.0',
+              style: TextStyle(
+                color: Colors.white24,
+                fontSize: 10,
+                letterSpacing: 2,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ],
         ),
-        IconButton(
-          onPressed: () => Get.toNamed('/notifications'),
-          icon: const Badge(
-            label: Text('2'),
-            child: Icon(Icons.notifications_outlined, color: Colors.white),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildWelcomeSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        FadeInLeft(
-          child: Text(
-            'Hello, ${authController.currentUser?.fullName.split(' ').first ?? 'User'}!',
-            style: Theme.of(context).textTheme.displayLarge?.copyWith(
-              color: Colors.white,
-              fontSize: 28,
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        FadeInLeft(
-          delay: const Duration(milliseconds: 200),
-          child: Obx(
-            () => Text(
-              voiceController.responseText.value,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyLarge?.copyWith(color: AppColors.grey),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickActions(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Quick Actions',
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(color: Colors.white70),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildActionItem(
-              context,
-              FontAwesomeIcons.whatsapp,
-              'WhatsApp',
-              AppColors.primary,
-            ),
-            _buildActionItem(
-              context,
-              Icons.phone_outlined,
-              'Call',
-              AppColors.secondary,
-            ),
-            _buildActionItem(
-              context,
-              Icons.message_outlined,
-              'Message',
-              Colors.blue,
-            ),
-            _buildActionItem(context, Icons.alarm, 'Alarm', Colors.orange),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionItem(
-    BuildContext context,
-    IconData icon,
-    String label,
-    Color color,
-  ) {
+  Widget _buildResponseCard() {
     return FadeInUp(
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(32),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: color.withOpacity(0.2)),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withOpacity(0.05),
+                  Colors.white.withOpacity(0.02),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
             ),
-            child: Icon(icon, color: color),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white70, fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHistorySection(BuildContext context) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Recent Commands',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(color: Colors.white70),
-          ),
-          const SizedBox(height: 16),
-          Expanded(
             child: Obx(
-              () => voiceController.commandHistory.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No commands yet',
-                        style: TextStyle(color: AppColors.grey),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: voiceController.commandHistory.length,
-                      itemBuilder: (context, index) {
-                        return FadeInRight(
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.darkSurface,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.05),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.history,
-                                  color: AppColors.primary,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    voiceController.commandHistory[index],
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVoiceControl(BuildContext context) {
-    return Center(
-      child: Column(
-        children: [
-          Obx(
-            () => AvatarGlow(
-              animate: voiceController.isListening.value,
-              glowColor: AppColors.primary,
-              duration: const Duration(milliseconds: 2000),
-              repeat: true,
-              child: GestureDetector(
-                onTap: () {
-                  if (voiceController.isListening.value) {
-                    voiceController.stopListening();
-                  } else {
-                    voiceController.startListening();
-                  }
-                },
-                child: Container(
-                  width: 80,
-                  height: 80,
-                  decoration: const BoxDecoration(
-                    gradient: AppColors.primaryGradient,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary,
-                        blurRadius: 20,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    voiceController.isListening.value
-                        ? Icons.stop_rounded
-                        : Icons.mic_rounded,
-                    color: Colors.white,
-                    size: 40,
-                  ),
+              () => Text(
+                _voice.responseText.value,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  height: 1.5,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 12),
-          Obx(
-            () => Text(
-              voiceController.isListening.value
-                  ? "Listening..."
-                  : "Tap to Speak",
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsOverview() {
+    return FadeInUp(
+      delay: const Duration(milliseconds: 200),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildStatItem('Efficiency', '98%', Icons.bolt_rounded),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: _buildStatItem('Latency', '24ms', Icons.speed_rounded),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(String label, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.primary, size: 20),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(color: Colors.white38, fontSize: 10),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionsTitle() {
+    return FadeInLeft(
+      child: Text(
+        'Neural Routines',
+        style: TextStyle(
+          color: Colors.white70,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionsGrid() {
+    return GridView.count(
+      shrinkWrap: true,
+      crossAxisCount: 2,
+      mainAxisSpacing: 16,
+      crossAxisSpacing: 16,
+      childAspectRatio: 1.5,
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        _buildActionTile(
+          'Search Web',
+          Icons.language_rounded,
+          AppColors.primary,
+        ),
+        _buildActionTile(
+          'Music Player',
+          Icons.music_note_rounded,
+          Colors.orange,
+        ),
+        _buildActionTile('Smart Home', Icons.home_max_rounded, Colors.blue),
+        _buildActionTile(
+          'Settings',
+          Icons.settings_input_component_rounded,
+          Colors.teal,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionTile(String title, IconData icon, Color color) {
+    return FadeInUp(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.03),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 8),
+            Text(
+              title,
               style: const TextStyle(
                 color: Colors.white,
+                fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHistorySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Neural Logs',
+          style: TextStyle(
+            color: Colors.white70,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1,
           ),
-        ],
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 50,
+          child: Obx(
+            () => ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _voice.commandHistory.length,
+              itemBuilder: (context, index) {
+                return Container(
+                  margin: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(100),
+                    border: Border.all(
+                      color: AppColors.primary.withOpacity(0.2),
+                    ),
+                  ),
+                  child: Text(
+                    _voice.commandHistory[index],
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVoiceFAB() {
+    return Positioned(
+      bottom: 40,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: FadeInUp(
+          child: Column(
+            children: [
+              GestureDetector(
+                onTap: () => _voice.startListening(),
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withOpacity(0.4),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.mic_rounded,
+                    color: Colors.white,
+                    size: 36,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'TAP TO TRIGGER',
+                style: TextStyle(
+                  color: Colors.white24,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -1,178 +1,238 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:animate_do/animate_do.dart';
 import '../controllers/auth_controller.dart';
 import '../theme/app_colors.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
-
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final AuthController _authController = Get.find<AuthController>();
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _isLoading = false;
-  bool _obscurePassword = true;
+  final _auth = Get.find<AuthController>();
+  final _emailCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  bool _loading = false;
 
-  void _handleLogin() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
-      final success = await _authController.login(
-        _emailController.text,
-        _passwordController.text,
+  void _login() async {
+    if (_emailCtrl.text.isEmpty || _passCtrl.text.isEmpty) {
+      Get.snackbar(
+        "Neural Access Denied",
+        "Matrix credentials missing",
+        backgroundColor: AppColors.error.withOpacity(0.8),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(20),
       );
-      setState(() => _isLoading = false);
-      if (success) {
-        Get.offAllNamed('/dashboard');
-      } else {
-        Get.snackbar(
-          'Error',
-          'Invalid credentials. Try again.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.error,
-          colorText: Colors.white,
-        );
-      }
+      return;
+    }
+    setState(() => _loading = true);
+    final ok = await _auth.login(_emailCtrl.text, _passCtrl.text);
+    setState(() => _loading = false);
+    if (ok) {
+      Get.offAllNamed('/dashboard');
+    } else {
+      Get.snackbar(
+        "Authentication Failed",
+        "Neural signature mismatch",
+        backgroundColor: AppColors.error.withOpacity(0.8),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(20),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 40),
-                FadeInDown(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.mic_rounded,
-                      color: AppColors.primary,
-                      size: 32,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                FadeInLeft(
-                  child: Text(
-                    'Welcome Back',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.displayLarge?.copyWith(fontSize: 32),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                FadeInLeft(
-                  delay: const Duration(milliseconds: 200),
-                  child: Text(
-                    'Sign in to your Vox AI account',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(color: AppColors.grey),
-                  ),
-                ),
-                const SizedBox(height: 40),
-                FadeInUp(
-                  delay: const Duration(milliseconds: 300),
-                  child: TextFormField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(
-                      hintText: 'Email or Phone Number',
-                      prefixIcon: Icon(Icons.person_outline),
-                    ),
-                    validator: (value) => value == null || value.isEmpty
-                        ? 'Please enter your email'
-                        : null,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                FadeInUp(
-                  delay: const Duration(milliseconds: 400),
-                  child: TextFormField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    decoration: InputDecoration(
-                      hintText: 'Password',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
+      backgroundColor: AppColors.darkBg,
+      body: Stack(
+        children: [
+          // Technical Background
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.1,
+              child: Lottie.network(
+                'https://assets9.lottiefiles.com/packages/lf20_hzfmxvpx.json', // Connection Grid
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    FadeInDown(
+                      duration: const Duration(seconds: 1),
+                      child: Container(
+                        height: 120,
+                        width: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.primary.withOpacity(0.05),
+                          border: Border.all(
+                            color: AppColors.primary.withOpacity(0.1),
+                          ),
                         ),
-                        onPressed: () => setState(
-                          () => _obscurePassword = !_obscurePassword,
+                        child: Center(
+                          child: Image.asset(
+                            'assets/images/vox_logo.png',
+                            height: 80,
+                          ),
                         ),
                       ),
                     ),
-                    validator: (value) => value != null && value.length < 6
-                        ? 'Min 6 characters'
-                        : null,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {},
-                    child: const Text('Forgot Password?'),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                FadeInUp(
-                  delay: const Duration(milliseconds: 500),
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleLogin,
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
+                    const SizedBox(height: 32),
+                    FadeInDown(
+                      delay: const Duration(milliseconds: 200),
+                      child: ShaderMask(
+                        shaderCallback: (bounds) =>
+                            AppColors.primaryGradient.createShader(bounds),
+                        child: const Text(
+                          'VOX AI',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            letterSpacing: 8,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+
+                    // Input Card
+                    FadeInUp(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                          child: Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.03),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.05),
+                              ),
                             ),
-                          )
-                        : const Text(
-                            'Login',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                            child: Column(
+                              children: [
+                                _buildNeuralField(
+                                  controller: _emailCtrl,
+                                  hint: 'NEURAL ID / EMAIL',
+                                  icon: Icons.fingerprint_rounded,
+                                ),
+                                const SizedBox(height: 20),
+                                _buildNeuralField(
+                                  controller: _passCtrl,
+                                  hint: 'ACCESS KEY',
+                                  icon: Icons.key_rounded,
+                                  obscure: true,
+                                ),
+                                const SizedBox(height: 32),
+                                ElevatedButton(
+                                  onPressed: _loading ? null : _login,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    minimumSize: const Size(
+                                      double.infinity,
+                                      64,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    elevation: 0,
+                                  ),
+                                  child: _loading
+                                      ? const CircularProgressIndicator(
+                                          color: Colors.white,
+                                        )
+                                      : const Text(
+                                          'AUTHORIZE ACCESS',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 2,
+                                          ),
+                                        ),
+                                ),
+                              ],
                             ),
                           ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Don't have an account?"),
-                    TextButton(
-                      onPressed: () => Get.toNamed('/register'),
-                      child: const Text(
-                        'Register',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 40),
+                    FadeIn(
+                      delay: const Duration(seconds: 1),
+                      child: TextButton(
+                        onPressed: () => Get.toNamed('/register'),
+                        child: Text(
+                          'GENERATE NEW NEURAL IDENTITY',
+                          style: TextStyle(
+                            color: AppColors.primary.withOpacity(0.7),
+                            fontSize: 10,
+                            letterSpacing: 2,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNeuralField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    bool obscure = false,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      style: const TextStyle(color: Colors.white, letterSpacing: 1.5),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(
+          color: Colors.white.withOpacity(0.2),
+          fontSize: 10,
+          letterSpacing: 2,
+        ),
+        prefixIcon: Icon(
+          icon,
+          color: AppColors.primary.withOpacity(0.5),
+          size: 20,
+        ),
+        filled: true,
+        fillColor: Colors.black.withOpacity(0.2),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.05)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.05)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1),
         ),
       ),
     );

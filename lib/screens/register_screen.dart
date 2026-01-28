@@ -1,178 +1,178 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:animate_do/animate_do.dart';
-import '../controllers/auth_controller.dart';
 import '../theme/app_colors.dart';
 
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
-
-  @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
-}
-
-class _RegisterScreenState extends State<RegisterScreen> {
-  final AuthController _authController = Get.find<AuthController>();
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  bool _isLoading = false;
-  bool _obscurePassword = true;
-
-  void _handleRegister() async {
-    if (_formKey.currentState!.validate()) {
-      if (_passwordController.text != _confirmPasswordController.text) {
-        Get.snackbar('Error', 'Passwords do not match');
-        return;
-      }
-      setState(() => _isLoading = true);
-      await _authController.register(
-        fullName: _nameController.text,
-        email: _emailController.text,
-        phoneNumber: _phoneController.text,
-        password: _passwordController.text,
-      );
-      setState(() => _isLoading = false);
-      Get.offAllNamed('/dashboard');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FadeInDown(
-                  child: Text(
-                    'Create Account',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.displayLarge?.copyWith(fontSize: 32),
+      body: Stack(
+        children: [
+          // Background Gradient
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF0F172A), Color(0xFF020617)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
+          // Content
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  IconButton(
+                    onPressed: () => Get.back(),
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                FadeInDown(
-                  delay: const Duration(milliseconds: 100),
-                  child: Text(
-                    'Start your journey with Vox AI',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(color: AppColors.grey),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                _buildField('Full Name', Icons.person_outline, _nameController),
-                const SizedBox(height: 16),
-                _buildField(
-                  'Email',
-                  Icons.email_outlined,
-                  _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 16),
-                _buildField(
-                  'Phone Number',
-                  Icons.phone_outlined,
-                  _phoneController,
-                  keyboardType: TextInputType.phone,
-                ),
-                const SizedBox(height: 16),
-                _buildPasswordField('Password', _passwordController),
-                const SizedBox(height: 16),
-                _buildPasswordField(
-                  'Confirm Password',
-                  _confirmPasswordController,
-                ),
-                const SizedBox(height: 32),
-                FadeInUp(
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleRegister,
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text(
-                            'Register',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Already have an account?"),
-                    TextButton(
-                      onPressed: () => Get.back(),
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                  const SizedBox(height: 20),
+                  FadeInLeft(
+                    child: const Text(
+                      'Create Account',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 40),
-              ],
+                  ),
+                  const SizedBox(height: 8),
+                  FadeInLeft(
+                    delay: const Duration(milliseconds: 200),
+                    child: const Text(
+                      'Join Vox AI and start your voice journey',
+                      style: TextStyle(color: Colors.white60, fontSize: 16),
+                    ),
+                  ),
+                  const SizedBox(height: 48),
+                  // Glassmorphic Card
+                  FadeInUp(
+                    duration: const Duration(milliseconds: 1000),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.1),
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              TextField(
+                                style: const TextStyle(color: Colors.white),
+                                decoration: InputDecoration(
+                                  hintText: 'Full Name',
+                                  hintStyle: const TextStyle(
+                                    color: Colors.white38,
+                                  ),
+                                  prefixIcon: const Icon(
+                                    Icons.person_outline,
+                                    color: Colors.white70,
+                                  ),
+                                  fillColor: Colors.white.withOpacity(0.05),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              TextField(
+                                style: const TextStyle(color: Colors.white),
+                                decoration: InputDecoration(
+                                  hintText: 'Email Address',
+                                  hintStyle: const TextStyle(
+                                    color: Colors.white38,
+                                  ),
+                                  prefixIcon: const Icon(
+                                    Icons.email_outlined,
+                                    color: Colors.white70,
+                                  ),
+                                  fillColor: Colors.white.withOpacity(0.05),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              TextField(
+                                obscureText: true,
+                                style: const TextStyle(color: Colors.white),
+                                decoration: InputDecoration(
+                                  hintText: 'Password',
+                                  hintStyle: const TextStyle(
+                                    color: Colors.white38,
+                                  ),
+                                  prefixIcon: const Icon(
+                                    Icons.lock_outline,
+                                    color: Colors.white70,
+                                  ),
+                                  fillColor: Colors.white.withOpacity(0.05),
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                              ElevatedButton(
+                                onPressed: () => Get.back(),
+                                style: ElevatedButton.styleFrom(
+                                  minimumSize: const Size(double.infinity, 60),
+                                  backgroundColor: AppColors.primary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Create Account',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Center(
+                    child: FadeIn(
+                      delay: const Duration(seconds: 1),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Already have an account?",
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                          TextButton(
+                            onPressed: () => Get.back(),
+                            child: const Text(
+                              'Login',
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildField(
-    String hint,
-    IconData icon,
-    TextEditingController controller, {
-    TextInputType? keyboardType,
-  }) {
-    return FadeInUp(
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        decoration: InputDecoration(hintText: hint, prefixIcon: Icon(icon)),
-        validator: (value) =>
-            value == null || value.isEmpty ? 'Field required' : null,
-      ),
-    );
-  }
-
-  Widget _buildPasswordField(String hint, TextEditingController controller) {
-    return FadeInUp(
-      child: TextFormField(
-        controller: controller,
-        obscureText: _obscurePassword,
-        decoration: InputDecoration(
-          hintText: hint,
-          prefixIcon: const Icon(Icons.lock_outline),
-          suffixIcon: IconButton(
-            icon: Icon(
-              _obscurePassword ? Icons.visibility_off : Icons.visibility,
-            ),
-            onPressed: () =>
-                setState(() => _obscurePassword = !_obscurePassword),
-          ),
-        ),
-        validator: (value) =>
-            value != null && value.length < 6 ? 'Min 6 characters' : null,
+        ],
       ),
     );
   }
