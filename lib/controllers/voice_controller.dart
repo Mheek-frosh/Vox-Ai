@@ -3,6 +3,10 @@ import 'package:get/get.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+/// Controller responsible for managing voice interactions.
+///
+/// It handles Speech-to-Text for listening to user commands,
+/// and Text-to-Speech for responding back to the user.
 class VoiceController extends GetxController {
   final SpeechToText _speechToText = SpeechToText();
   final FlutterTts _flutterTts = FlutterTts();
@@ -19,6 +23,7 @@ class VoiceController extends GetxController {
     _initTts();
   }
 
+  /// Initializes the Speech-to-Text service and sets up status listeners.
   void _initSpeech() async {
     try {
       await _speechToText.initialize(
@@ -32,10 +37,13 @@ class VoiceController extends GetxController {
     }
   }
 
+  /// Initializes the Text-to-Speech service with an English voice.
   void _initTts() async {
     await _flutterTts.setLanguage("en-US");
   }
 
+  /// Requests microphone permissions and starts listening for voice input.
+  /// Resulting text is passed to [_processCommand].
   Future<void> startListening() async {
     var status = await Permission.microphone.request();
     if (status.isGranted) {
@@ -55,6 +63,10 @@ class VoiceController extends GetxController {
     isListening.value = false;
   }
 
+  /// Processes the interpreted text command and generates a response.
+  /// 
+  /// The command is stored in [commandHistory]. Based on simple keyword matching,
+  /// it decides how to respond using Text-to-Speech.
   void _processCommand(String command) {
     commandHistory.insert(0, command);
     String cmd = command.toLowerCase();

@@ -65,7 +65,7 @@ class VoiceOverlay extends StatelessWidget {
 
                 // Lottie Voice Wave
                 Lottie.network(
-                  'https://assets4.lottiefiles.com/packages/lf20_f7h6vpxj.json', // Wave
+                  'https://assets4.lottiefiles.com/packages/lf20_f7h6vpxj.json', // Wave animation
                   height: 120,
                   width: double.infinity,
                   fit: BoxFit.cover,

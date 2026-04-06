@@ -8,6 +8,10 @@ import '../controllers/auth_controller.dart';
 import '../theme/app_colors.dart';
 import '../widgets/voice_overlay.dart';
 
+/// The main dashboard screen of the Vox AI application.
+///
+/// This screen provides the user interface for interacting with the voice assistant,
+/// viewing recent stats, triggering routines, and seeing the command history.
 class DashboardScreen extends StatelessWidget {
   DashboardScreen({super.key});
   final _voice = Get.put(VoiceController());
@@ -90,6 +94,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  /// Builds the top app bar with greeting and settings icon.
   Widget _buildSliverAppBar() {
     return SliverToBoxAdapter(
       child: Padding(
@@ -145,6 +150,8 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  /// Builds the animated avatar representing the voice assistant.
+  /// The animation changes based on whether the assistant is currently listening.
   Widget _buildAssistantAvatar() {
     return FadeIn(
       duration: const Duration(seconds: 2),
@@ -182,6 +189,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  /// Builds the central card that displays the assistant's textual response.
   Widget _buildResponseCard() {
     return FadeInUp(
       child: ClipRRect(
@@ -340,6 +348,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  /// Builds a horizontal list displaying the user's past voice commands.
   Widget _buildHistorySection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -384,6 +393,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  /// Builds the floating action button used to trigger voice listening manually.
   Widget _buildVoiceFAB() {
     return Positioned(
       bottom: 40,

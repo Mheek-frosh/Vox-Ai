@@ -11,11 +11,17 @@ import 'controllers/auth_controller.dart';
 import 'controllers/theme_controller.dart';
 import 'theme/app_themes.dart';
 
+/// The main entry point for the Vox AI application.
+/// It ensures that Flutter bindings are initialized before running the app.
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const VoxAiApp());
 }
 
+/// The root widget of the Vox AI application.
+/// 
+/// This widget is responsible for setting up the global theme, routing,
+/// and initializing core controllers like [ThemeController] and [AuthController].
 class VoxAiApp extends StatelessWidget {
   const VoxAiApp({super.key});
 
