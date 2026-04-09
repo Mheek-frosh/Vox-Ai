@@ -228,6 +228,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  /// Builds a row displaying recent interaction statistics (e.g., Efficiency, Latency).
   Widget _buildStatsOverview() {
     return FadeInUp(
       delay: const Duration(milliseconds: 200),
@@ -245,6 +246,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  /// Builds an individual statistic item with a label, value, and an icon.
   Widget _buildStatItem(String label, String value, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -279,6 +281,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  /// Builds the title text for the Quick Actions grid section.
   Widget _buildQuickActionsTitle() {
     return FadeInLeft(
       child: Text(
@@ -292,6 +295,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  /// Builds a grid of quick actions/routines (e.g., Search Web, Music Player).
   Widget _buildQuickActionsGrid() {
     return GridView.count(
       shrinkWrap: true,
@@ -321,6 +325,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  /// Builds an individual tile for a quick action.
   Widget _buildActionTile(String title, IconData icon, Color color) {
     return FadeInUp(
       child: Container(
